@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <tchar.h>
+#include "Model.h"
 
 static TCHAR szWindowClass[] = _T("DesktopApp");
 static TCHAR szTitle[] = _T("Student score system");
@@ -15,6 +16,7 @@ HWND registerButton
     ,textField
     ,userTextBox
     ,passwordTextBox;
+Model model;
 
 int CALLBACK WinMain(_In_ HINSTANCE hInstance,_In_opt_ HINSTANCE hPrevInstance,_In_ LPSTR lpCmdLine,_In_ int nCmdShow){
     WNDCLASSEX wcex;
@@ -71,7 +73,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
     TCHAR passwordLabel[] = _T("Enter your password:");
     int gwtstat = 0;
 
-
     switch (message){
     case WM_CREATE: //When the window is just created
         //BUTTONS
@@ -96,6 +97,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
     case WM_PAINT:
         hdc = BeginPaint(hWnd, &ps);
 
+        //LABELS
         TextOut(hdc, 35, 5, welcomeLabel, _tcslen(welcomeLabel));
         TextOut(hdc, 35, 50, userLabel, _tcslen(userLabel));
         TextOut(hdc, 35, 110, passwordLabel, _tcslen(passwordLabel));
@@ -109,22 +111,29 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
     case WM_COMMAND:
         switch (LOWORD(wParam)) {
         case 1://login
+            //Get the username
             char userName[40];
-            gwtstat = GetWindowText(userTextBox, LPWSTR(&userName[0]), 40);
+            gwtstat = GetWindowText(userTextBox, LPSTR(&userName[0]), 40);
             if (gwtstat == 0) {
                 MessageBox(NULL, _T("Can you please enter your username."), _T("Error"), NULL);
                 break;
             }
 
+            //Get the password
             char password[40];
-            gwtstat = GetWindowText(passwordTextBox, LPWSTR(&password[0]), 40);
+            gwtstat = GetWindowText(passwordTextBox, LPSTR(&password[0]), 40);
             if (gwtstat == 0) {
                 MessageBox(NULL, _T("Can you please enter your password."), _T("Error"), NULL);
                 break;
             }
+            model.saveData();
             break;
         case 2://Register
-            
+            char buff[100];
+            string m = model.getData(1);
+            sprintf_s(buff, "name is:%s", m.c_str());
+            cout << buff;
+            MessageBox(NULL, _T(buff), _T("Error"), NULL);
             break;
         }
         break;
