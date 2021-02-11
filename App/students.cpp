@@ -69,6 +69,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
     TCHAR welcomeLabel[] = _T("Welcome to the student score system! please log in or register");
     TCHAR userLabel[] = _T("Enter your username:");
     TCHAR passwordLabel[] = _T("Enter your password:");
+    int gwtstat = 0;
 
 
     switch (message){
@@ -108,8 +109,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
     case WM_COMMAND:
         switch (LOWORD(wParam)) {
         case 1://login
-            int gwtstat;
+            char userName[40];
+            gwtstat = GetWindowText(userTextBox, LPWSTR(&userName[0]), 40);
+            if (gwtstat == 0) {
+                MessageBox(NULL, _T("Can you please enter your username."), _T("Error"), NULL);
+                break;
+            }
 
+            char password[40];
+            gwtstat = GetWindowText(passwordTextBox, LPWSTR(&password[0]), 40);
+            if (gwtstat == 0) {
+                MessageBox(NULL, _T("Can you please enter your password."), _T("Error"), NULL);
+                break;
+            }
             break;
         case 2://Register
             
