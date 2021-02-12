@@ -4,5 +4,6 @@ using namespace std;
 class Model {
 public:
     void saveData();
-    string getData(int);
+    void getData();
+    vector<string> checkUser(string,string);
 };

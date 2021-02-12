@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <tchar.h>
+#include <vector>
 #include "Model.h"
 
 static TCHAR szWindowClass[] = _T("DesktopApp");
@@ -72,9 +73,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
     TCHAR userLabel[] = _T("Enter your username:");
     TCHAR passwordLabel[] = _T("Enter your password:");
     int gwtstat = 0;
-
+    vector<string> answer; 
+    string title;
+    
     switch (message){
     case WM_CREATE: //When the window is just created
+        model.getData();
         //BUTTONS
         loginButton = CreateWindow(TEXT("button"), TEXT("Log in"),
             WS_VISIBLE | WS_CHILD,
@@ -126,14 +130,27 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
                 MessageBox(NULL, _T("Can you please enter your password."), _T("Error"), NULL);
                 break;
             }
-            model.saveData();
+            
+            char buff[100];
+            answer = model.checkUser(userName, password);
+            if (answer[1] == "1") {
+                sprintf_s(buff, "Bienvenido %s", answer[0].c_str());
+                cout << buff;
+                MessageBox(NULL, _T(buff), _T("Students portal"), NULL);
+            }
+            else if (answer[1] == "2") {
+                sprintf_s(buff, "Bienvenido %s", answer[0].c_str());
+                cout << buff;
+                MessageBox(NULL, _T(buff), _T("Teachers portal"), NULL);
+            }
+            else {
+                sprintf_s(buff, "%s", answer[0].c_str());
+                cout << buff;
+                MessageBox(NULL, _T(buff), _T("Error"), NULL);
+            }
             break;
         case 2://Register
-            char buff[100];
-            string m = model.getData(1);
-            sprintf_s(buff, "name is:%s", m.c_str());
-            cout << buff;
-            MessageBox(NULL, _T(buff), _T("Error"), NULL);
+        
             break;
         }
         break;
