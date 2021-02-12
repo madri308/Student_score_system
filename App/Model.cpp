@@ -33,7 +33,36 @@ vector<string> Model::checkUser(string username, string password) {
     }
     return { "User not found ","0" };
 }
-
+string Model::getSubjects() {
+    string stuctureData = ""; //String to save
+    map<string, vector<string>>::iterator in1;
+    for (in1 = structures[2].begin(); in1 != structures[2].end(); in1++) {
+        vector<string> data = in1->second; //students data
+        string object = (in1->first) + ": ";  //write the key
+        for (string element : data) {     //saves each element from students data  
+            object += element + ", ";        //splitted by ,
+        }
+        object.pop_back(); //Delete the last ,
+        object.pop_back(); //Delete the last ,
+        object += "\n"; //All students splitted by ;
+        stuctureData += object;
+    }
+    return stuctureData;
+}
+string Model::getStudentsScores() {
+    string scoresData = ""; //String to save
+    map<string, vector<vector<string>>>::iterator in4;
+    for (in4 = scores.begin(); in4 != scores.end(); in4++) {
+        vector<vector<string>> data = in4->second;  //teachers data
+        string score = (in4->first) + ":";          //write the key
+        for (vector<string> element : data) {       //saves each element from teachers data  
+            score += "\n   "+element[0] + "-" + element[1];    //splitted by ,
+        }
+        score += "\n";       //All students splitted by ;
+        scoresData += score;
+    }
+    return scoresData;
+}
 //Save all the structures in a txt file
 void Model::saveData() {
     ofstream newFile("data.txt");

@@ -12,7 +12,9 @@ LRESULT CALLBACK WndProc2(HWND, UINT, WPARAM, LPARAM);
 HWND registerButton, loginButton, textField, userTextBox, passwordTextBox //Login View
 , insertSubject, modifySubject, deleteSubject, searchSubject, insertScore //Teacher view
 , modifyScore, deleteScore, searchScore, enquiryStudent, enquirySubject   //Teacher view
+, subjectTextBox, creditTextBox, subjectTextBox2, scoreTextBox, studentTextBox //Teacher view
 , enquiryMyResult, calculateGPA, selectSubjects; //Student view
+
 
 //Declare constants
 Model model; 
@@ -92,9 +94,9 @@ void initSecondView() {
     hWnd2 = CreateWindow(
         wcex2.lpszClassName,
         _T("Student score system 2"),
-        WS_MINIMIZEBOX | WS_SYSMENU,
+        WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, CW_USEDEFAULT,
-        500, 230,
+        602, 300,
         NULL, NULL, hInstance2, NULL
     );
 
@@ -182,13 +184,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
                 sprintf_s(buff, "Bienvenido %s", answer[0].c_str());
                 cout << buff;
                 MessageBox(NULL, _T(buff), _T("Students portal"), NULL);
-                ShowWindow(hWnd2, nCmd);
+                PostMessage(hWnd, WM_CLOSE, 0, 0);
+                userType = 1;
+                initSecondView();
             }
             else if (answer[1] == "2") { //Teacher
                 sprintf_s(buff, "Bienvenido %s", answer[0].c_str());
                 cout << buff;
                 MessageBox(NULL, _T(buff), _T("Teachers portal"), NULL);
-                ShowWindow(hWnd2, nCmd);
+                PostMessage(hWnd, WM_CLOSE, 0, 0);
+                userType = 2;
+                initSecondView();
             }
             else { //Error
                 sprintf_s(buff, "%s", answer[0].c_str());
@@ -214,79 +220,162 @@ LRESULT CALLBACK WndProc2(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     PAINTSTRUCT ps;
     HDC hdc;
     int gwtstat = 0;
+    string subjects;
+    string scores;
 
     switch (message) {
+    case WM_PAINT:
+        hdc = BeginPaint(hWnd, &ps);
+
+        //LABELS
+        TextOut(hdc, 2, 53, "Subject: credit hours", _tcslen("Subject: credit hours"));
+        TextOut(hdc, 310, 53, "Student: Subject-Score", _tcslen("Student: Subject-Score"));
+        TextOut(hdc, 2, 1, "Subject name:", _tcslen("Subject name:"));
+        TextOut(hdc, 132, 1, "Credit hours:", _tcslen("Credit hours:"));
+        TextOut(hdc, 310, 1, "Student:", _tcslen("Student:"));
+        TextOut(hdc, 410, 1, "Subject:", _tcslen("Subject:"));
+        TextOut(hdc, 510, 1, "Score:", _tcslen("Score:"));
+
+
+        EndPaint(hWnd, &ps);
+        break;
     case WM_CREATE: //When the window is just created
         switch (userType) {
         case 2: //Teacher
+            subjects = model.getSubjects();
+            char buff[500];
+            sprintf_s(buff, "%s", subjects.c_str());
+            cout << buff;
+
+            scores = model.getStudentsScores();
+            char buff2[500];
+            sprintf_s(buff2, "%s", scores.c_str());
+            cout << buff2;
+
+            //TEXT BOXES
+            CreateWindow(TEXT("STATIC"), _T(buff),
+                WS_BORDER | WS_VISIBLE | WS_CHILD,
+                2, 70, 150, (_tcslen(buff)/10)*17,
+                hWnd, NULL, NULL, NULL);
+
+            CreateWindow(TEXT("STATIC"), _T(buff2),
+                WS_BORDER | WS_VISIBLE | WS_CHILD,
+                310, 70, 150, (_tcslen(buff2) / 10) * 15,
+                hWnd, NULL, NULL, NULL);
+
+            //ENTRY BOXES
+            subjectTextBox = CreateWindow(TEXT("Edit"), TEXT(""),
+                WS_BORDER | WS_VISIBLE | WS_CHILD,
+                30, 20, 100, 20,
+                hWnd, NULL, NULL, NULL);
+            creditTextBox = CreateWindow(TEXT("Edit"), TEXT(""),
+                WS_BORDER | WS_VISIBLE | WS_CHILD,
+                155, 20, 100, 20,
+                hWnd, NULL, NULL, NULL);
+
+            subjectTextBox2 = CreateWindow(TEXT("Edit"), TEXT(""),
+                WS_BORDER | WS_VISIBLE | WS_CHILD,
+                430, 20, 70, 20,
+                hWnd, NULL, NULL, NULL);
+            scoreTextBox = CreateWindow(TEXT("Edit"), TEXT(""),
+                WS_BORDER | WS_VISIBLE | WS_CHILD,
+                530, 20, 50, 20,
+                hWnd, NULL, NULL, NULL);
+            studentTextBox = CreateWindow(TEXT("Edit"), TEXT(""),
+                WS_BORDER | WS_VISIBLE | WS_CHILD,
+                330, 20, 70, 20,
+                hWnd, NULL, NULL, NULL);
+
             //BUTTONS
             insertSubject = CreateWindow(TEXT("button"), TEXT("Insert Subject"),
                 WS_VISIBLE | WS_CHILD,
-                125, 10, 120, 25,
+                155, 70, 120, 25,
                 hWnd, (HMENU)1, NULL, NULL);
             modifySubject = CreateWindow(TEXT("button"), TEXT("Modify Subject"),
                 WS_VISIBLE | WS_CHILD,
-                125, 45, 120, 25,
+                155, 105, 120, 25,
                 hWnd, (HMENU)2, NULL, NULL);
             deleteSubject = CreateWindow(TEXT("button"), TEXT("Delete Subject"),
                 WS_VISIBLE | WS_CHILD,
-                125, 80, 120, 25,
-                hWnd, (HMENU)2, NULL, NULL);
+                155, 140, 120, 25,
+                hWnd, (HMENU)3, NULL, NULL);
             searchSubject = CreateWindow(TEXT("button"), TEXT("Search Subject"),
                 WS_VISIBLE | WS_CHILD,
-                125, 115, 120, 25,
-                hWnd, (HMENU)2, NULL, NULL);
-            deleteScore = CreateWindow(TEXT("button"), TEXT("Enquiry Subject"),
+                155, 175, 120, 25,
+                hWnd, (HMENU)4, NULL, NULL);
+            enquirySubject = CreateWindow(TEXT("button"), TEXT("Enquiry Subject"),
                 WS_VISIBLE | WS_CHILD,
-                125, 150, 120, 25,
-                hWnd, (HMENU)2, NULL, NULL);
+                155, 210, 120, 25,
+                hWnd, (HMENU)5, NULL, NULL);
             insertScore = CreateWindow(TEXT("button"), TEXT("Insert Score"),
                 WS_VISIBLE | WS_CHILD,
-                255, 10, 120, 25,
-                hWnd, (HMENU)2, NULL, NULL);
+                465, 70, 120, 25,
+                hWnd, (HMENU)6, NULL, NULL);
             modifyScore = CreateWindow(TEXT("button"), TEXT("Modify Score"),
                 WS_VISIBLE | WS_CHILD,
-                255, 45, 120, 25,
-                hWnd, (HMENU)2, NULL, NULL);
+                465, 105, 120, 25,
+                hWnd, (HMENU)7, NULL, NULL);
             deleteScore = CreateWindow(TEXT("button"), TEXT("Delete Score"),
                 WS_VISIBLE | WS_CHILD,
-                255, 80, 120, 25,
-                hWnd, (HMENU)2, NULL, NULL);
+                465, 140, 120, 25,
+                hWnd, (HMENU)8, NULL, NULL);
             searchScore = CreateWindow(TEXT("button"), TEXT("Search Score"),
                 WS_VISIBLE | WS_CHILD,
-                255, 115, 120, 25,
-                hWnd, (HMENU)2, NULL, NULL);
+                465, 175, 120, 25,
+                hWnd, (HMENU)9, NULL, NULL);
             enquiryStudent = CreateWindow(TEXT("button"), TEXT("Enquiry Student"),
                 WS_VISIBLE | WS_CHILD,
-                255, 150, 120, 25,
-                hWnd, (HMENU)2, NULL, NULL);
+                465, 210, 120, 25,
+                hWnd, (HMENU)10, NULL, NULL);
             break;
         case 1: //Student
             //MORE BUTTONS
             enquiryMyResult = CreateWindow(TEXT("button"), TEXT("Enquiry My Result of Subject"),
                 WS_VISIBLE | WS_CHILD,
-                125, 10, 250, 45,
-                hWnd, (HMENU)1, NULL, NULL);
+                225, 10, 250, 45,
+                hWnd, (HMENU)11, NULL, NULL);
             selectSubjects = CreateWindow(TEXT("button"), TEXT("Select Subjects for next semester"),
                 WS_VISIBLE | WS_CHILD,
-                125, 65, 250, 45,
-                hWnd, (HMENU)2, NULL, NULL);
+                225, 65, 250, 45,
+                hWnd, (HMENU)12, NULL, NULL);
             calculateGPA = CreateWindow(TEXT("button"), TEXT("Calculate GPA"),
                 WS_VISIBLE | WS_CHILD,
-                190, 120, 120, 45,
-                hWnd, (HMENU)2, NULL, NULL);
+                290, 120, 120, 45,
+                hWnd, (HMENU)13, NULL, NULL);
             break;
         }
-    case WM_PAINT:
-        hdc = BeginPaint(hWnd, &ps);
-
-        EndPaint(hWnd, &ps);
-
-        break;
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
     case WM_COMMAND:
+        switch (LOWORD(wParam)) {
+        case 1://insertSubject
+            break;
+        case 2://modifySubject
+            break;
+        case 3://deleteSubject
+            break;
+        case 4://searchSubject
+            break;
+        case 5://enquirySubject
+            break;
+        case 6://insertScore
+            break;
+        case 7://modifyScore
+            break;
+        case 8://deleteScore
+            break;
+        case 9://searchScore
+            break;
+        case 10://enquiryStudent
+            break;
+        case 11://enquiryMyResult
+            break;
+        case 12://selectSubjects
+            break;
+        case 13://calculateGPA
+            break;
+        }
         break;
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
