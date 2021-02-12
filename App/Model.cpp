@@ -33,22 +33,24 @@ vector<string> Model::checkUser(string username, string password) {
     }
     return { "User not found ","0" };
 }
+
+//Save all the structures in a txt file
 void Model::saveData() {
     ofstream newFile("data.txt");
 
     for (int datas = 0; datas < 3; datas++) {
-        //Save students
+        //Save all
         string stuctureData = ""; //String to save
         map<string, vector<string>>::iterator in1;
         for (in1 = structures[datas].begin(); in1 != structures[datas].end(); in1++) {
             vector<string> data = in1->second; //students data
-            string student = (in1->first) + ":";  //write the key
+            string object = (in1->first) + ":";  //write the key
             for (string element : data) {     //saves each element from students data  
-                student += element + ",";        //splitted by ,
+                object += element + ",";        //splitted by ,
             }
-            student.pop_back(); //Delete the last ,
-            student += ";"; //All students splitted by ;
-            stuctureData += student;
+            object.pop_back(); //Delete the last ,
+            object += ";"; //All students splitted by ;
+            stuctureData += object;
         }
         newFile << stuctureData << endl; //write in the file
     }
@@ -67,9 +69,10 @@ void Model::saveData() {
         scoresData += score;
     }
     newFile << scoresData << endl; //write in the file
-
     newFile.close();    //close the file
 }
+
+//Fill all the structures with data from the txt file
 void Model::getData() {
     std::ifstream infile("data.txt");
     string tp;
@@ -81,14 +84,14 @@ void Model::getData() {
             bool labelDone = false;
             vector<string> data = {};
             for (char element : tp) {
-                if (element == ';') { //All elements of the object readed then
+                if (element == ';') { //All elements of the object done then
                     data.push_back(word);
                     structures[line][label] = data; //Saves data and restart all
                     label = word = ""; 
                     data = {}; 
                     labelDone = false;
                 }
-                else if (element == ':'){ //Label readed
+                else if (element == ':'){ //Label done
                     labelDone = true;
                 }
                 else if (element == ',') { //New word to save
@@ -141,6 +144,5 @@ void Model::getData() {
         }
         line++;
     }
-
     infile.close();
 }

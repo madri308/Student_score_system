@@ -7,18 +7,21 @@
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK WndProc2(HWND, UINT, WPARAM, LPARAM);
-void initSecondView();
 
-
+//Declare buttons
 HWND registerButton, loginButton, textField, userTextBox, passwordTextBox //Login View
-, insertSubject, modifySubject, deleteSubject, searchSubject, insertScore, modifyScore, deleteScore, searchScore, enquiryStudent, enquirySubject //Teacher view
+, insertSubject, modifySubject, deleteSubject, searchSubject, insertScore //Teacher view
+, modifyScore, deleteScore, searchScore, enquiryStudent, enquirySubject   //Teacher view
 , enquiryMyResult, calculateGPA, selectSubjects; //Student view
 
-Model model;
+//Declare constants
+Model model; 
 _In_ int nCmd;
 HWND hWnd2;
 int userType;
 HINSTANCE hInstance2;
+
+//Main
 int CALLBACK WinMain(_In_ HINSTANCE hInstance,_In_opt_ HINSTANCE hPrevInstance,_In_ LPSTR lpCmdLine,_In_ int nCmdShow){
     hInstance2 = hInstance;
     nCmd = nCmdShow;
@@ -59,8 +62,6 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance,_In_opt_ HINSTANCE hPrevInstance,_
     ShowWindow(hWnd,nCmdShow);
     UpdateWindow(hWnd);
 
-    
-
     MSG msg;
     while (GetMessage(&msg, NULL, 0, 0)){
         TranslateMessage(&msg);
@@ -68,6 +69,49 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance,_In_opt_ HINSTANCE hPrevInstance,_
     }
     return (int)msg.wParam;
 }
+//Second window
+void initSecondView() {
+    WNDCLASSEX wcex2;
+    wcex2.cbSize = sizeof(WNDCLASSEX);
+    wcex2.style = CS_HREDRAW | CS_VREDRAW;
+    wcex2.lpfnWndProc = WndProc2;
+    wcex2.cbClsExtra = 0;
+    wcex2.cbWndExtra = 0;
+    wcex2.hInstance = hInstance2;
+    wcex2.hIcon = LoadIcon(hInstance2, IDI_APPLICATION);
+    wcex2.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wcex2.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wcex2.lpszMenuName = NULL;
+    wcex2.lpszClassName = _T("Second");
+    wcex2.hIconSm = LoadIcon(wcex2.hInstance, IDI_APPLICATION);
+
+    if (!RegisterClassEx(&wcex2)) {
+        MessageBox(NULL, _T("Call to RegisterClassEx failed!"), _T("Windows Desktop Guided Tour"), NULL);
+    }
+
+    hWnd2 = CreateWindow(
+        wcex2.lpszClassName,
+        _T("Student score system 2"),
+        WS_MINIMIZEBOX | WS_SYSMENU,
+        CW_USEDEFAULT, CW_USEDEFAULT,
+        500, 230,
+        NULL, NULL, hInstance2, NULL
+    );
+
+    if (!hWnd2) {
+        MessageBox(NULL, _T("Call to CreateWindow failed!"), _T("Windows Desktop Guided Tour"), NULL);
+    }
+    ShowWindow(hWnd2, nCmd);
+    UpdateWindow(hWnd2);
+
+    MSG msg;
+    while (GetMessage(&msg, NULL, 0, 0)) {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+}
+
+//Function that is called after any event in the firts window
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
     PAINTSTRUCT ps;
     HDC hdc;
@@ -108,8 +152,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
         TextOut(hdc, 35, 50, userLabel, _tcslen(userLabel));
         TextOut(hdc, 35, 110, passwordLabel, _tcslen(passwordLabel));
 
-        EndPaint(hWnd, &ps);
-            
+        EndPaint(hWnd, &ps);        
         break;
     case WM_DESTROY:
         PostQuitMessage(0);
@@ -135,19 +178,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
             
             char buff[100];
             answer = model.checkUser(userName, password);
-            if (answer[1] == "1") {
+            if (answer[1] == "1") { //Student
                 sprintf_s(buff, "Bienvenido %s", answer[0].c_str());
                 cout << buff;
                 MessageBox(NULL, _T(buff), _T("Students portal"), NULL);
                 ShowWindow(hWnd2, nCmd);
             }
-            else if (answer[1] == "2") {
+            else if (answer[1] == "2") { //Teacher
                 sprintf_s(buff, "Bienvenido %s", answer[0].c_str());
                 cout << buff;
                 MessageBox(NULL, _T(buff), _T("Teachers portal"), NULL);
                 ShowWindow(hWnd2, nCmd);
             }
-            else {
+            else { //Error
                 sprintf_s(buff, "%s", answer[0].c_str());
                 cout << buff;
                 MessageBox(NULL, _T(buff), _T("Error"), NULL);
@@ -166,17 +209,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
     }
     return 0;
 }
-
+//Function that is called after any event in the second window
 LRESULT CALLBACK WndProc2(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     PAINTSTRUCT ps;
     HDC hdc;
-    TCHAR welcomeLabel[] = _T("Welcome to the student score system! please log in or register");
     int gwtstat = 0;
 
     switch (message) {
     case WM_CREATE: //When the window is just created
         switch (userType) {
-        case 1:
+        case 2: //Teacher
             //BUTTONS
             insertSubject = CreateWindow(TEXT("button"), TEXT("Insert Subject"),
                 WS_VISIBLE | WS_CHILD,
@@ -219,7 +261,8 @@ LRESULT CALLBACK WndProc2(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 255, 150, 120, 25,
                 hWnd, (HMENU)2, NULL, NULL);
             break;
-        case 2:
+        case 1: //Student
+            //MORE BUTTONS
             enquiryMyResult = CreateWindow(TEXT("button"), TEXT("Enquiry My Result of Subject"),
                 WS_VISIBLE | WS_CHILD,
                 125, 10, 250, 45,
@@ -250,44 +293,4 @@ LRESULT CALLBACK WndProc2(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     }
     return 0;
-}
-void initSecondView() {
-    WNDCLASSEX wcex2;
-    wcex2.cbSize = sizeof(WNDCLASSEX);
-    wcex2.style = CS_HREDRAW | CS_VREDRAW;
-    wcex2.lpfnWndProc = WndProc2;
-    wcex2.cbClsExtra = 0;
-    wcex2.cbWndExtra = 0;
-    wcex2.hInstance = hInstance2;
-    wcex2.hIcon = LoadIcon(hInstance2, IDI_APPLICATION);
-    wcex2.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wcex2.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-    wcex2.lpszMenuName = NULL;
-    wcex2.lpszClassName = _T("Second");
-    wcex2.hIconSm = LoadIcon(wcex2.hInstance, IDI_APPLICATION);
-
-    if (!RegisterClassEx(&wcex2)) {
-        MessageBox(NULL, _T("Call to RegisterClassEx failed!"), _T("Windows Desktop Guided Tour"), NULL);
-    }
-
-    hWnd2 = CreateWindow(
-        wcex2.lpszClassName,
-        _T("Student score system 2"),
-         WS_MINIMIZEBOX | WS_SYSMENU,
-        CW_USEDEFAULT, CW_USEDEFAULT,
-        500, 230,
-        NULL, NULL, hInstance2, NULL
-    );
-
-    if (!hWnd2) {
-        MessageBox(NULL, _T("Call to CreateWindow failed!"), _T("Windows Desktop Guided Tour"), NULL);
-    }
-    ShowWindow(hWnd2, nCmd);
-    UpdateWindow(hWnd2);
-
-    MSG msg;
-    while (GetMessage(&msg, NULL, 0, 0)) {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-    }
 }
