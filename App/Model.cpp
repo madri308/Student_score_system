@@ -11,9 +11,10 @@ using namespace std;
 map<string, vector<string>> students; //Students list username:data
 map<string, vector<string>> teachers; //Teachers list username:data
 map<string, vector<string>> subjects; //Subjects list subject:data
+map<string, vector<string>> nextSemester; //Subjects list subject:data
 map<string, vector<vector<string>>> scores; //score list username:data
 
-vector<map<string, vector<string>>> structures{ students,teachers,subjects };
+vector<map<string, vector<string>>> structures{ students,teachers,subjects,nextSemester };
 vector<string> Model::checkUser(string username, string password) {
     if (!(structures[0].find(username) == structures[0].end())) {
         if (structures[0][username][0] == password) {
@@ -35,6 +36,22 @@ vector<string> Model::checkUser(string username, string password) {
 }
 void Model::insertSubject(string subjectName, string credits) {
     structures[2][subjectName] = { credits };
+    saveData();
+}
+void Model::saveNextSemesterSubjects(string studentName, string subjectsString) {
+    vector<string> subjects = {};
+    string subject = "";
+    for (char element : subjectsString) {
+        if (element == ',') {
+            subjects.push_back(subject);
+            subject = "";
+        }
+        else {
+            subject += element;
+        }
+    }
+    subjects.push_back(subject);
+    structures[3][studentName] = subjects;
     saveData();
 }
 void Model::modifySubject(string subjectName, string newCredits) {
@@ -78,8 +95,16 @@ void Model::deleteScore(string subjectName, string studentName) {
     }
     saveData();
 }
+string Model::getScore(string subjectName, string studentName) {
+    for (int index = 0; index < scores[studentName].size(); index++) {
+        vector<string> subjectData = scores[studentName][index];
+        if (subjectData[0] == subjectName) {
+            return subjectData[0]+" - "+subjectData[1];
+        }
+    }
+}
 string Model::getSubjects() {
-    string stuctureData = ""; //String to save
+    string structureData = ""; //String to save
     map<string, vector<string>>::iterator in1;
     for (in1 = structures[2].begin(); in1 != structures[2].end(); in1++) {
         vector<string> data = in1->second; //students data
@@ -90,9 +115,17 @@ string Model::getSubjects() {
         object.pop_back(); //Delete the last ,
         object.pop_back(); //Delete the last ,
         object += "\n"; //All students splitted by ;
-        stuctureData += object;
+        structureData += object;
     }
-    return stuctureData;
+    return structureData;
+}
+string Model::getNextSemester(string studentName) {
+    string structureData = ""; //String to save
+    vector<string> data = structures[3][studentName];
+    for (string subject : data) {
+        structureData += subject + "\n";
+    }
+    return structureData;
 }
 string Model::getStudentsScores() {
     string scoresData = ""; //String to save
@@ -108,13 +141,54 @@ string Model::getStudentsScores() {
     }
     return scoresData;
 }
+string Model::enquirySubject(string subjectName) {
+    string scoresData = ""; //String to save
+    map<string, vector<vector<string>>>::iterator in4;
+    for (in4 = scores.begin(); in4 != scores.end(); in4++) {
+        vector<vector<string>> data = in4->second; 
+        string score = (in4->first) + ":";          //write the key
+        for (vector<string> element : data) {       //saves each element  
+            if (element[0] == subjectName) {
+                score += "\n   " + element[0] + "-" + element[1];    //splitted by ,
+            }
+        }
+        score += "\n";       //All students splitted by ;
+        scoresData += score;
+    }
+    return scoresData;
+}
+string Model::enquiryStudent(string studentName) {
+    string scoresData = ""; //String to save
+    vector<vector<string>> data = scores[studentName];
+    for (vector<string> subject : data) {
+        scoresData += subject[0] + "-" + subject[1]+"\n";
+    }
+    return scoresData;
+}
+float Model::calculateGPA(string studentName) {
+    vector<vector<string>> studentScores = scores[studentName];
+    int totalPoint = 0;
+    int totalCredits = 0;
+    for (vector<string> score : studentScores) {
+        int points = 0;
+        stringstream geek1(score[1]);
+        geek1 >> points;
+        totalPoint += points;
+
+        int credits = 0;
+        stringstream geek2(structures[2][score[0]][0]);
+        geek2 >> credits;
+        totalCredits += credits;
+    }
+    return (totalPoint) / totalCredits;
+}
 //Save all the structures in a txt file
 void Model::saveData() {
     ofstream newFile("data.txt");
 
-    for (int datas = 0; datas < 3; datas++) {
+    for (int datas = 0; datas < 4; datas++) {
         //Save all
-        string stuctureData = ""; //String to save
+        string structureData = ""; //String to save
         map<string, vector<string>>::iterator in1;
         for (in1 = structures[datas].begin(); in1 != structures[datas].end(); in1++) {
             vector<string> data = in1->second; //students data
@@ -124,9 +198,9 @@ void Model::saveData() {
             }
             object.pop_back(); //Delete the last ,
             object += ";"; //All students splitted by ;
-            stuctureData += object;
+            structureData += object;
         }
-        newFile << stuctureData << endl; //write in the file
+        newFile << structureData << endl; //write in the file
     }
 
     //Save scores
@@ -153,7 +227,7 @@ void Model::getData() {
     string msg;
     int line = 0;
     while (getline(infile, tp)) {
-        if (line != 3) {
+        if (line != 4) {
             string label = "", word = "";
             bool labelDone = false;
             vector<string> data = {};

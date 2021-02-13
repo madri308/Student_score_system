@@ -24,6 +24,7 @@ HWND hWnd2;
 HINSTANCE hInstance2;
 //Logic
 int userType;
+string actualUser;
 Model model;
 
 //Main
@@ -188,6 +189,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
                 MessageBox(NULL, _T(buff), _T("Students portal"), NULL);
                 PostMessage(hWnd, WM_CLOSE, 0, 0);
                 userType = 1;
+                actualUser = userName;
                 initSecondView();
             }
             else if (answer[1] == "2") { //Teacher
@@ -196,6 +198,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
                 MessageBox(NULL, _T(buff), _T("Teachers portal"), NULL);
                 PostMessage(hWnd, WM_CLOSE, 0, 0);
                 userType = 2;
+                actualUser = userName;
                 initSecondView();
             }
             else { //Error
@@ -206,7 +209,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
             break;
         case 2://Register
             PostMessage(hWnd, WM_CLOSE, 0, 0);
-            userType = 2;
+            userType = 1;
+            actualUser = "diego28";
             initSecondView();
             break;
         }
@@ -232,17 +236,22 @@ LRESULT CALLBACK WndProc2(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
     switch (message) {
     case WM_PAINT:
+
         hdc = BeginPaint(hWnd, &ps);
-
-        //LABELS
         TextOut(hdc, 2, 53, "Subject: credit hours", _tcslen("Subject: credit hours"));
-        TextOut(hdc, 310, 53, "Student: Subject-Score", _tcslen("Student: Subject-Score"));
-        TextOut(hdc, 2, 1, "Subject name:", _tcslen("Subject name:"));
-        TextOut(hdc, 132, 1, "Credit hours:", _tcslen("Credit hours:"));
-        TextOut(hdc, 310, 1, "Student:", _tcslen("Student:"));
-        TextOut(hdc, 410, 1, "Subject:", _tcslen("Subject:"));
-        TextOut(hdc, 510, 1, "Score:", _tcslen("Score:"));
-
+        if (userType == 2) {
+            //LABELS
+            TextOut(hdc, 310, 53, "Student: Subject-Score", _tcslen("Student: Subject-Score"));
+            TextOut(hdc, 2, 1, "Subject name:", _tcslen("Subject name:"));
+            TextOut(hdc, 132, 1, "Credit hours:", _tcslen("Credit hours:"));
+            TextOut(hdc, 310, 1, "Student:", _tcslen("Student:"));
+            TextOut(hdc, 410, 1, "Subject:", _tcslen("Subject:"));
+            TextOut(hdc, 510, 1, "Score:", _tcslen("Score:"));
+        }
+        else {
+            TextOut(hdc, 197, 150, "Subjects for the next semester.", _tcslen("Subjects for the next semester."));
+            TextOut(hdc, 427, 53, "Next semester subjects", _tcslen("Next semester subjects"));
+        }
         EndPaint(hWnd, &ps);
         break;
     case WM_CREATE: //When the window is just created
@@ -333,18 +342,40 @@ LRESULT CALLBACK WndProc2(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 hWnd, (HMENU)10, NULL, NULL);
             break;
         case 1: //Student
+            //ENTRYBOXES
+            subjectTextBox = CreateWindow(TEXT("Edit"), TEXT("Biology,English,Mathematics..."),
+                WS_BORDER | WS_VISIBLE | WS_CHILD,
+                200, 170, 200, 20,
+                hWnd, NULL, NULL, NULL);
+            //TEXT BOXES
+            subjects = model.getSubjects();
+            sprintf_s(buff, "%s", subjects.c_str());
+            cout << buff;
+            subjectText = CreateWindow(TEXT("STATIC"), _T(buff),
+                WS_BORDER | WS_VISIBLE | WS_CHILD,
+                2, 70, 150, (_tcslen(buff) / 10) * 17,
+                hWnd, NULL, NULL, NULL);
+
+            subjects = model.getNextSemester(actualUser);
+            sprintf_s(buff, "%s", subjects.c_str());
+            cout << buff;
+            subjectText = CreateWindow(TEXT("STATIC"), _T(buff),
+                WS_BORDER | WS_VISIBLE | WS_CHILD,
+                430, 70, 150, (_tcslen(buff) / 5) * 17,
+                hWnd, NULL, NULL, NULL);
+
             //MORE BUTTONS
             enquiryMyResult = CreateWindow(TEXT("button"), TEXT("Enquiry My Result of Subject"),
                 WS_VISIBLE | WS_CHILD,
-                225, 10, 250, 45,
+                170, 30, 250, 45,
                 hWnd, (HMENU)11, NULL, NULL);
             selectSubjects = CreateWindow(TEXT("button"), TEXT("Select Subjects for next semester"),
                 WS_VISIBLE | WS_CHILD,
-                225, 65, 250, 45,
+                170, 105, 250, 45,
                 hWnd, (HMENU)12, NULL, NULL);
             calculateGPA = CreateWindow(TEXT("button"), TEXT("Calculate GPA"),
                 WS_VISIBLE | WS_CHILD,
-                290, 120, 120, 45,
+                240, 200, 120, 45,
                 hWnd, (HMENU)13, NULL, NULL);
             break;
         }
@@ -409,6 +440,15 @@ LRESULT CALLBACK WndProc2(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             MessageBox(NULL, _T(buff), _T(subjectName), NULL);
             break;
         case 5://enquirySubject
+            //Get the subject
+            gwtstat = GetWindowText(subjectTextBox, LPSTR(&subjectName[0]), 40);
+            if (gwtstat == 0) {
+                MessageBox(NULL, _T("Can you please enter the subject name."), _T("Error"), NULL);
+                break;
+            }
+            sprintf_s(buff, "%s", model.enquirySubject(subjectName).c_str());
+            cout << buff;
+            MessageBox(NULL, _T(buff), _T(subjectName), NULL);
             break;
         case 6://insertScore
             //Get the subject
@@ -483,17 +523,40 @@ LRESULT CALLBACK WndProc2(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 MessageBox(NULL, _T("Can you please enter the student name."), _T("Error"), NULL);
                 break;
             }
-            sprintf_s(buff, "%s", model.getSubject(subjectName).c_str());
+            sprintf_s(buff, "%s", model.getScore(subjectName,student).c_str());
             cout << buff;
-            MessageBox(NULL, _T(buff), _T(subjectName), NULL);
+            MessageBox(NULL, _T(buff), _T(student), NULL);
             break;
         case 10://enquiryStudent
+            //Get the student
+            gwtstat = GetWindowText(studentTextBox, LPSTR(&student[0]), 40);
+            if (gwtstat == 0) {
+                MessageBox(NULL, _T("Can you please enter the student name."), _T("Error"), NULL);
+                break;
+            }
+            sprintf_s(buff, "%s", model.enquiryStudent(student).c_str());
+            cout << buff;
+            MessageBox(NULL, _T(buff), _T(student), NULL);
             break;
         case 11://enquiryMyResult
+            sprintf_s(buff, "%s", model.enquiryStudent(actualUser).c_str());
+            cout << buff;
+            MessageBox(NULL, _T(buff), _T("Information"), NULL);
             break;
         case 12://selectSubjects
+            //Get the subject
+            gwtstat = GetWindowText(subjectTextBox, LPSTR(&subjectName[0]), 40);
+            if (gwtstat == 0) {
+                MessageBox(NULL, _T("Can you please enter the subjects."), _T("Error"), NULL);
+                break;
+            }
+            model.saveNextSemesterSubjects(actualUser,subjectName);
+            MessageBox(NULL, _T("Subjects for next semester saved successfully"), _T(subjectName), NULL);
             break;
         case 13://calculateGPA
+            sprintf_s(buff, "%s", to_string(model.calculateGPA(actualUser)).c_str());
+            cout << buff;
+            MessageBox(NULL, _T(buff), _T("GPA"), NULL);
             break;
         }
         break;

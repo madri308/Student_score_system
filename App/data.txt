@@ -1,4 +1,5 @@
 diego28:easy654,Diego Maradona;josh22:pass345,Josh Bird;madri20:pass123,Esteban Madrigal Marin;maria33:code987,Maria Gonzalez;
 bell32:code987,Bernard Lincoln;drake72:easy654,Drake Nichols;jp123:pass123,Jean Paul Gord;mark34:pass345,Mark Mendes;
 Biology:5;Biology Lab:1;English:5;Mathematics:5;
-diego28:Physics-90,Science-100;josh22:Math-40,Science-100;madri20:Math-20,Science-100;
+diego28:Biology,English,Mathematics;josh22:Mathematics,Biology Lab;madri20:Mathematics,Biology Lab;
+diego28:Biology-90,English-100;josh22:Mathematics-40,Biology Lab-100;madri20:Mathematics-20,Biology Lab-100;
