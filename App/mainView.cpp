@@ -9,7 +9,7 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK WndProc2(HWND, UINT, WPARAM, LPARAM);
 
 //Declare GUI elements
-HWND registerButton, loginButton, textField, userTextBox, passwordTextBox //Login View
+HWND loginButton, textField, userTextBox, passwordTextBox //Login View
 , insertSubject, modifySubject, deleteSubject, searchSubject, insertScore //Teacher view
 , modifyScore, deleteScore, searchScore, enquiryStudent, enquirySubject   //Teacher view
 , subjectTextBox, creditTextBox, subjectTextBox2, scoreTextBox, studentTextBox //Teacher view
@@ -136,10 +136,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
             WS_VISIBLE | WS_CHILD,
             165, 180, 80, 25,
             hWnd, (HMENU) 1, NULL, NULL);
-        registerButton = CreateWindow(TEXT("button"), TEXT("Register"),
-            WS_VISIBLE | WS_CHILD,
-            255, 180, 80, 25,
-            hWnd, (HMENU) 2, NULL, NULL);
 
         //ENTRY BOXES
         userTextBox = CreateWindow(TEXT("Edit"), TEXT(""),
@@ -206,12 +202,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
                 cout << buff;
                 MessageBox(NULL, _T(buff), _T("Error"), NULL);
             }
-            break;
-        case 2://Register
-            PostMessage(hWnd, WM_CLOSE, 0, 0);
-            userType = 1;
-            actualUser = "diego28";
-            initSecondView();
             break;
         }
         break;
