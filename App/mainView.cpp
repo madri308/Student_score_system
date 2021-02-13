@@ -8,20 +8,23 @@
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK WndProc2(HWND, UINT, WPARAM, LPARAM);
 
-//Declare buttons
+//Declare GUI elements
 HWND registerButton, loginButton, textField, userTextBox, passwordTextBox //Login View
 , insertSubject, modifySubject, deleteSubject, searchSubject, insertScore //Teacher view
 , modifyScore, deleteScore, searchScore, enquiryStudent, enquirySubject   //Teacher view
 , subjectTextBox, creditTextBox, subjectTextBox2, scoreTextBox, studentTextBox //Teacher view
+, subjectText, scoreText //Teacher view
 , enquiryMyResult, calculateGPA, selectSubjects; //Student view
 
 
 //Declare constants
-Model model; 
+//GUI
 _In_ int nCmd;
 HWND hWnd2;
-int userType;
 HINSTANCE hInstance2;
+//Logic
+int userType;
+Model model;
 
 //Main
 int CALLBACK WinMain(_In_ HINSTANCE hInstance,_In_opt_ HINSTANCE hPrevInstance,_In_ LPSTR lpCmdLine,_In_ int nCmdShow){
@@ -169,7 +172,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
                 MessageBox(NULL, _T("Can you please enter your username."), _T("Error"), NULL);
                 break;
             }
-
             //Get the password
             char password[40];
             gwtstat = GetWindowText(passwordTextBox, LPSTR(&password[0]), 40);
@@ -177,7 +179,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
                 MessageBox(NULL, _T("Can you please enter your password."), _T("Error"), NULL);
                 break;
             }
-            
+
             char buff[100];
             answer = model.checkUser(userName, password);
             if (answer[1] == "1") { //Student
@@ -222,6 +224,11 @@ LRESULT CALLBACK WndProc2(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     int gwtstat = 0;
     string subjects;
     string scores;
+    char subjectName[40];
+    char student[40];
+    char score[40];
+    string msg;
+    char buff[500];
 
     switch (message) {
     case WM_PAINT:
@@ -236,31 +243,28 @@ LRESULT CALLBACK WndProc2(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         TextOut(hdc, 410, 1, "Subject:", _tcslen("Subject:"));
         TextOut(hdc, 510, 1, "Score:", _tcslen("Score:"));
 
-
         EndPaint(hWnd, &ps);
         break;
     case WM_CREATE: //When the window is just created
+        model.getData();
         switch (userType) {
         case 2: //Teacher
-            subjects = model.getSubjects();
-            char buff[500];
-            sprintf_s(buff, "%s", subjects.c_str());
-            cout << buff;
-
-            scores = model.getStudentsScores();
-            char buff2[500];
-            sprintf_s(buff2, "%s", scores.c_str());
-            cout << buff2;
 
             //TEXT BOXES
-            CreateWindow(TEXT("STATIC"), _T(buff),
+            subjects = model.getSubjects();
+            sprintf_s(buff, "%s", subjects.c_str());
+            cout << buff;
+            subjectText = CreateWindow(TEXT("STATIC"), _T(buff),
                 WS_BORDER | WS_VISIBLE | WS_CHILD,
                 2, 70, 150, (_tcslen(buff)/10)*17,
                 hWnd, NULL, NULL, NULL);
 
-            CreateWindow(TEXT("STATIC"), _T(buff2),
+            scores = model.getStudentsScores();
+            sprintf_s(buff, "%s", scores.c_str());
+            cout << buff;
+            scoreText = CreateWindow(TEXT("STATIC"), _T(buff),
                 WS_BORDER | WS_VISIBLE | WS_CHILD,
-                310, 70, 150, (_tcslen(buff2) / 10) * 15,
+                310, 70, 150, (_tcslen(buff) / 10) * 15,
                 hWnd, NULL, NULL, NULL);
 
             //ENTRY BOXES
@@ -350,22 +354,138 @@ LRESULT CALLBACK WndProc2(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_COMMAND:
         switch (LOWORD(wParam)) {
         case 1://insertSubject
+            //Get the subject
+            gwtstat = GetWindowText(subjectTextBox, LPSTR(&subjectName[0]), 40);
+            if (gwtstat == 0) {
+                MessageBox(NULL, _T("Can you please enter the subject name."), _T("Error"), NULL);
+                break;
+            }
+            //Get the credits
+            char credits[40];
+            gwtstat = GetWindowText(creditTextBox, LPSTR(&credits[0]), 40);
+            if (gwtstat == 0) {
+                MessageBox(NULL, _T("Can you please enter the credits."), _T("Error"), NULL);
+                break;
+            }
+            model.insertSubject(subjectName, credits);
+            MessageBox(NULL, _T("Subject added successfully!\nRestart the app to see the changes"), _T("Subject Added"), NULL);
             break;
         case 2://modifySubject
+            //Get the subject
+            gwtstat = GetWindowText(subjectTextBox, LPSTR(&subjectName[0]), 40);
+            if (gwtstat == 0) {
+                MessageBox(NULL, _T("Can you please enter the subject name."), _T("Error"), NULL);
+                break;
+            }
+            //Get the new credits
+            char newCredits[40];
+            gwtstat = GetWindowText(creditTextBox, LPSTR(&newCredits[0]), 40);
+            if (gwtstat == 0) {
+                MessageBox(NULL, _T("Can you please enter the new credits."), _T("Error"), NULL);
+                break;
+            }
+            model.modifySubject(subjectName, newCredits);
+            MessageBox(NULL, _T("Subject modified successfully!\nRestart the app to see the changes"), _T("Subject Modified"), NULL);
             break;
         case 3://deleteSubject
+            //Get the subject
+            gwtstat = GetWindowText(subjectTextBox, LPSTR(&subjectName[0]), 40);
+            if (gwtstat == 0) {
+                MessageBox(NULL, _T("Can you please enter the subject name."), _T("Error"), NULL);
+                break;
+            }
+            model.deleteSubject(subjectName);
+            MessageBox(NULL, _T("Subject deleted successfully!\nRestart the app to see the changes"), _T("Subject Deleted"), NULL);
             break;
         case 4://searchSubject
+            //Get the subject
+            gwtstat = GetWindowText(subjectTextBox, LPSTR(&subjectName[0]), 40);
+            if (gwtstat == 0) {
+                MessageBox(NULL, _T("Can you please enter the subject name."), _T("Error"), NULL);
+                break;
+            }
+            sprintf_s(buff, "%s", model.getSubject(subjectName).c_str());
+            cout << buff;
+            MessageBox(NULL, _T(buff), _T(subjectName), NULL);
             break;
         case 5://enquirySubject
             break;
         case 6://insertScore
+            //Get the subject
+            gwtstat = GetWindowText(subjectTextBox2, LPSTR(&subjectName[0]), 40);
+            if (gwtstat == 0) {
+                MessageBox(NULL, _T("Can you please enter the subject name."), _T("Error"), NULL);
+                break;
+            }
+            //Get the student
+            gwtstat = GetWindowText(studentTextBox, LPSTR(&student[0]), 40);
+            if (gwtstat == 0) {
+                MessageBox(NULL, _T("Can you please enter the student name."), _T("Error"), NULL);
+                break;
+            }
+            //Get the score
+            gwtstat = GetWindowText(scoreTextBox, LPSTR(&score[0]), 40);
+            if (gwtstat == 0) {
+                MessageBox(NULL, _T("Can you please enter the score."), _T("Error"), NULL);
+                break;
+            }
+            model.insertScore(subjectName, student, score);
+            MessageBox(NULL, _T("Score added successfully!\nRestart the app to see the changes"), _T("Score Added"), NULL);
             break;
         case 7://modifyScore
+            //Get the subject
+            gwtstat = GetWindowText(subjectTextBox2, LPSTR(&subjectName[0]), 40);
+            if (gwtstat == 0) {
+                MessageBox(NULL, _T("Can you please enter the subject name."), _T("Error"), NULL);
+                break;
+            }
+            //Get the student
+            gwtstat = GetWindowText(studentTextBox, LPSTR(&student[0]), 40);
+            if (gwtstat == 0) {
+                MessageBox(NULL, _T("Can you please enter the student name."), _T("Error"), NULL);
+                break;
+            }
+            //Get the score
+            gwtstat = GetWindowText(scoreTextBox, LPSTR(&score[0]), 40);
+            if (gwtstat == 0) {
+                MessageBox(NULL, _T("Can you please enter the score."), _T("Error"), NULL);
+                break;
+            }
+            model.modifyScore(subjectName, student, score);
+            MessageBox(NULL, _T("Score modified successfully!\nRestart the app to see the changes"), _T("Score Modified"), NULL);
             break;
         case 8://deleteScore
+            //Get the subject
+            gwtstat = GetWindowText(subjectTextBox2, LPSTR(&subjectName[0]), 40);
+            if (gwtstat == 0) {
+                MessageBox(NULL, _T("Can you please enter the subject name."), _T("Error"), NULL);
+                break;
+            }
+            //Get the student
+            gwtstat = GetWindowText(studentTextBox, LPSTR(&student[0]), 40);
+            if (gwtstat == 0) {
+                MessageBox(NULL, _T("Can you please enter the student name."), _T("Error"), NULL);
+                break;
+            }
+            model.deleteScore(subjectName, student);
+            MessageBox(NULL, _T("Score deleted successfully!\nRestart the app to see the changes"), _T("Score Deleted"), NULL);
             break;
         case 9://searchScore
+            //Get the subject
+            gwtstat = GetWindowText(subjectTextBox2, LPSTR(&subjectName[0]), 40);
+            if (gwtstat == 0) {
+                MessageBox(NULL, _T("Can you please enter the subject name."), _T("Error"), NULL);
+                break;
+            }
+            //Get the student
+            gwtstat = GetWindowText(studentTextBox, LPSTR(&student[0]), 40);
+            if (gwtstat == 0) {
+                MessageBox(NULL, _T("Can you please enter the student name."), _T("Error"), NULL);
+                break;
+            }
+            sprintf_s(buff, "%s", model.getSubject(subjectName).c_str());
+            cout << buff;
+            MessageBox(NULL, _T(buff), _T(subjectName), NULL);
             break;
         case 10://enquiryStudent
             break;

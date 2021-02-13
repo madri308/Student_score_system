@@ -33,6 +33,51 @@ vector<string> Model::checkUser(string username, string password) {
     }
     return { "User not found ","0" };
 }
+void Model::insertSubject(string subjectName, string credits) {
+    structures[2][subjectName] = { credits };
+    saveData();
+}
+void Model::modifySubject(string subjectName, string newCredits) {
+    structures[2][subjectName] = { newCredits };
+    saveData();
+}
+void Model::deleteSubject(string subjectName) {
+    structures[2].erase(subjectName);
+    saveData();
+}
+string Model::getSubject(string subjectName) {
+    vector<string> data = structures[2][subjectName];
+    string stringData = "";
+    for (string element : data) {
+        stringData += element + ",";
+    }
+    stringData.pop_back();
+    return stringData;
+}
+void Model::insertScore(string subjectName, string studentName, string score) {
+    scores[studentName].push_back({ subjectName,score });
+    saveData();
+}
+void Model::modifyScore(string subjectName, string studentName, string score) {
+    vector<vector<string>> *data = &scores[studentName];
+    for (vector<string> &subjectData : *data) {
+        if (subjectData[0] == subjectName) {
+            subjectData[1] = score;
+            break;
+        }
+    }
+    saveData();
+}
+void Model::deleteScore(string subjectName, string studentName) {
+    for (int index = 0; index < scores[studentName].size(); index++) {
+        vector<string> subjectData = scores[studentName][index];
+        if (subjectData[0] == subjectName) {
+            scores[studentName].erase(scores[studentName].begin() + index);
+            break;
+        }
+    }
+    saveData();
+}
 string Model::getSubjects() {
     string stuctureData = ""; //String to save
     map<string, vector<string>>::iterator in1;
